@@ -70,28 +70,30 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
       {isOpen && (
-        <div className='850px:hidden'>
-          <div className='px-2 pt-2 pb-3 space-y-4'>
-            <NavLink to='/' onClick={closeMenu}>
-              Home
-            </NavLink>
-            <NavLink to='/data-info' onClick={closeMenu}>
-              Data Info
-            </NavLink>
-            <NavLink to='/prediction' onClick={closeMenu}>
-              Prediction
-            </NavLink>
-            <NavLink to='/visualization' onClick={closeMenu}>
-              Visualization
-            </NavLink>
-            <NavLink to='/contact' onClick={closeMenu}>
-              Contact Us
-            </NavLink>
-            <NavLink to='/FAQ' onClick={closeMenu}>
-              FAQ
-            </NavLink>
-          </div>
+        <div
+          className='absolute top-20 left-0 w-full bg-gray-900 text-white p-5 space-y-4'
+          style={{ zIndex: 40 }}
+        >
+          <NavLink to='/' onClick={closeMenu}>
+            Home
+          </NavLink>
+          <NavLink to='/data-info' onClick={closeMenu}>
+            Data Info
+          </NavLink>
+          <NavLink to='/prediction' onClick={closeMenu}>
+            Prediction
+          </NavLink>
+          <NavLink to='/visualization' onClick={closeMenu}>
+            Visualization
+          </NavLink>
+          <NavLink to='/contact' onClick={closeMenu}>
+            Contact Us
+          </NavLink>
+          <NavLink to='/FAQ' onClick={closeMenu}>
+            FAQ
+          </NavLink>
         </div>
       )}
     </nav>
