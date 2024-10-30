@@ -1,6 +1,17 @@
+/* eslint-disable no-unused-vars */
 import axios from "axios";
 import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
+
+// Debounce function to delay validation
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
 
 const Prediction = () => {
   const [userInput, setUserInput] = useState({
@@ -13,15 +24,55 @@ const Prediction = () => {
     SkinThickness: "",
     DPF: "",
   });
+
   const [prediction, setPrediction] = useState(null);
   const [buttonDisabled, setButtonDisabled] = useState(false);
+
+  const ranges = {
+    Age: "0 - 120",
+    Pregnancies: "0 - 20",
+    Glucose: "0 - 300",
+    BloodPressure: "0 - 180",
+    Insulin: "0 - 600",
+    BMI: "10 - 60",
+    SkinThickness: "0 - 100",
+    DPF: "0.0 - 2.5",
+  };
+
+  const validateInput = (name, value) => {
+    const range = ranges[name].split(" - ");
+    const min = parseFloat(range[0]);
+    const max = parseFloat(range[1]);
+    return value >= min && value <= max;
+  };
+
+  const debouncedValidation = useRef(
+    debounce((name, value) => {
+      if (!validateInput(name, value)) {
+        setButtonDisabled(true);
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Input",
+          text: `${name} must be within the range: ${ranges[name]}`,
+        });
+      } else {
+        setButtonDisabled(false);
+      }
+    }, 500)
+  ).current;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserInput({ ...userInput, [name]: value });
+    debouncedValidation(name, value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonDisabled(true);
     try {
       const response = await axios.post(
-        "http://192.168.0.103:5000/predict",
+        "https://ml-algo-for-glucobuddy.onrender.com/predict",
         userInput
       );
       setPrediction(response.data);
@@ -34,11 +85,7 @@ const Prediction = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  });
-
-  const handleChange = (e) => {
-    setUserInput({ ...userInput, [e.target.name]: e.target.value });
-  };
+  }, []);
 
   return (
     <div className='min-h-screen bg-gradient-to-r from-purple-500 to-pink-500 flex flex-col items-center justify-center pb-3 md:pb-0'>
@@ -60,131 +107,26 @@ const Prediction = () => {
           </h1>
           <form onSubmit={handleSubmit}>
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-              <div>
-                <div className='mb-4'>
+              {Object.keys(userInput).map((key) => (
+                <div key={key} className='mb-4'>
                   <label
-                    htmlFor='Age'
+                    htmlFor={key}
                     className='block text-gray-700 font-bold mb-2'
                   >
-                    Age
+                    {key}
                   </label>
                   <input
                     type='number'
-                    name='Age'
-                    value={userInput.Age}
+                    name={key}
+                    placeholder={`Range ${ranges[key]}`}
+                    value={userInput[key]}
                     onChange={handleChange}
                     className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
                   />
                 </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='Pregnancies'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    Pregnancies
-                  </label>
-                  <input
-                    type='number'
-                    name='Pregnancies'
-                    value={userInput.Pregnancies}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='Glucose'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    Glucose
-                  </label>
-                  <input
-                    type='number'
-                    name='Glucose'
-                    value={userInput.Glucose}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='BloodPressure'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    Blood Pressure
-                  </label>
-                  <input
-                    type='number'
-                    name='BloodPressure'
-                    value={userInput.BloodPressure}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-              </div>
-              <div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='Insulin'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    Insulin
-                  </label>
-                  <input
-                    type='number'
-                    name='Insulin'
-                    value={userInput.Insulin}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='BMI'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    BMI
-                  </label>
-                  <input
-                    type='number'
-                    name='BMI'
-                    value={userInput.BMI}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='SkinThickness'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    Skin Thickness
-                  </label>
-                  <input
-                    type='number'
-                    name='SkinThickness'
-                    value={userInput.SkinThickness}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='DPF'
-                    className='block text-gray-700 font-bold mb-2'
-                  >
-                    DPF
-                  </label>
-                  <input
-                    type='number'
-                    name='DPF'
-                    value={userInput.DPF}
-                    onChange={handleChange}
-                    className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-purple-500'
-                  />
-                </div>
-              </div>
+              ))}
             </div>
+
             <div className='flex justify-center mt-6'>
               <button
                 type='submit'
@@ -200,6 +142,7 @@ const Prediction = () => {
             </div>
           </form>
         </motion.div>
+
         <motion.div
           initial={{ opacity: 0, x: 150 }}
           whileInView={{ opacity: 1, x: 0 }}
