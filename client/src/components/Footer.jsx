@@ -151,7 +151,7 @@ const Footer = () => {
             className='text-gray-400 hover:text-white transition-colors duration-300 text-center md:text-right'
           >
             <p>Developed by Tushan Afnan</p>
-            <p>Liaoning International Student Innovation Competition 2024</p>
+            <p>For Graduation Thesis Purpose</p>
           </a>
         </div>
       </div>
